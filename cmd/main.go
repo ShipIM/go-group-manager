@@ -11,16 +11,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Config struct {
-	Host         string
-	Port         string
-	Username     string
-	Password     string
-	DBName       string
-	SSLMode      string
-	MigrationDir string
-}
-
 //go:embed migration/*.sql
 var MigrationsFS embed.FS
 
@@ -29,20 +19,20 @@ func main() {
 		log.Fatalf("can not initialize configs: %s", err.Error())
 	}
 
-	cfg := Config{
-		Host:         viper.GetString("db.host"),
-		Port:         viper.GetString("db.port"),
-		Username:     viper.GetString("db.username"),
-		Password:     viper.GetString("db.password"),
-		DBName:       viper.GetString("db.dbname"),
-		SSLMode:      viper.GetString("db.sslmode"),
-		MigrationDir: viper.GetString("db.migration_dir"),
-	}
+	var (
+		host         = viper.GetString("db.host")
+		port         = viper.GetString("db.port")
+		username     = viper.GetString("db.username")
+		password     = viper.GetString("db.password")
+		dbName       = viper.GetString("db.dbname")
+		sslMode      = viper.GetString("db.sslmode")
+		migrationDir = viper.GetString("db.migration_dir")
+	)
 
-	migrator := postgres.GetNewMigrator(MigrationsFS, cfg.MigrationDir)
+	migrator := postgres.NewMigrator(MigrationsFS, migrationDir)
 
 	dataSource := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.Username, cfg.DBName, cfg.Password, cfg.SSLMode)
+		host, port, username, dbName, password, sslMode)
 
 	conn, err := sql.Open("postgres", dataSource)
 	if err != nil {
