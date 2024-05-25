@@ -41,7 +41,6 @@ func (m *Migrator) ApplyMigrations(db *sql.DB) error {
 	if err = migrator.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("unable to apply migrations %v", err)
 	}
-	defer migrator.Close()
 
 	return nil
 }

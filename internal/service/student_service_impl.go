@@ -5,30 +5,30 @@ import (
 	"github.com/ShipIM/go-group-manager/internal/repository"
 )
 
-type StudentServiceImpl struct {
+type StudentService struct {
 	studentRepository repository.StudentRepository
 }
 
-func NewStudentService(studentRepository repository.StudentRepository) *StudentServiceImpl {
-	return &StudentServiceImpl{studentRepository}
+func NewStudentService(studentRepository repository.StudentRepository) *StudentService {
+	return &StudentService{studentRepository}
 }
 
-func (s *StudentServiceImpl) CreateStudent(student entity.Student) (entity.Student, error) {
+func (s *StudentService) CreateStudent(student entity.Student) (entity.Student, error) {
 	return s.studentRepository.CreateStudent(student)
 }
 
-func (s *StudentServiceImpl) GetStudentById(id int) (entity.Student, error) {
+func (s *StudentService) GetStudentById(id int) (entity.Student, error) {
 	return s.studentRepository.GetStudentById(id)
 }
 
-func (s *StudentServiceImpl) GetStudents(filter repository.StudentFilter) ([]entity.Student, error) {
-	return s.studentRepository.FindAllStudents(filter)
+func (s *StudentService) GetStudents() ([]entity.Student, error) {
+	return s.studentRepository.FindAllStudents()
 }
 
-func (s *StudentServiceImpl) UpdateStudent(student entity.Student) error {
+func (s *StudentService) UpdateStudent(student entity.Student) error {
 	return s.studentRepository.UpdateStudent(student)
 }
 
-func (s *StudentServiceImpl) DeleteStudentById(id int) error {
+func (s *StudentService) DeleteStudentById(id int) error {
 	return s.studentRepository.DeleteStudentById(id)
 }

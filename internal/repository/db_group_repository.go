@@ -7,21 +7,21 @@ import (
 	"github.com/ShipIM/go-group-manager/internal/domain/entity"
 )
 
-type DatabaseGroupRepository struct {
+type DbGroupRepository struct {
 	db *sql.DB
 }
 
-func NewGroupRepository(db *sql.DB) *DatabaseGroupRepository {
-	return &DatabaseGroupRepository{db}
+func NewGroupRepository(db *sql.DB) *DbGroupRepository {
+	return &DbGroupRepository{db}
 }
 
-func (r *DatabaseGroupRepository) CreateGroup(group entity.Group) (entity.Group, error) {
+func (r *DbGroupRepository) CreateGroup(group entity.Group) (entity.Group, error) {
 	var created entity.Group
 
 	query := `
 		INSERT INTO _group (name, course, grade) 
 		VALUES ($1, $2, $3)
-		RETURNING id, name, course, grade`
+		RETURNING name, course, grade`
 
 	row := r.db.QueryRow(query, group.Name, group.Course, group.Grade)
 
@@ -33,13 +33,13 @@ func (r *DatabaseGroupRepository) CreateGroup(group entity.Group) (entity.Group,
 	return created, nil
 }
 
-func (r *DatabaseGroupRepository) GetGroupByName(name string) (entity.Group, error) {
+func (r *DbGroupRepository) GetGroupByName(name string) (entity.Group, error) {
 	var group entity.Group
 
 	query := `
-		SELECT name, course, grade FROM _group
-	 	WHERE name = $1
-		FROM _group`
+		SELECT name, course, grade
+		FROM _group
+	 	WHERE name = $1`
 
 	row := r.db.QueryRow(query, name)
 
@@ -55,16 +55,14 @@ func (r *DatabaseGroupRepository) GetGroupByName(name string) (entity.Group, err
 	return group, nil
 }
 
-func (r *DatabaseGroupRepository) FindAllGroups(filter GroupFilter) ([]entity.Group, error) {
+func (r *DbGroupRepository) FindAllGroups() ([]entity.Group, error) {
 	var groups []entity.Group
 
 	query := `
 		SELECT name, course, grade
-		FROM _group
-		WHERE ($1 IS NULL OR course = $1)
-		AND ($2 IS NULL OR grade = $2)`
+		FROM _group`
 
-	rows, err := r.db.Query(query, deref(filter.Course), deref(filter.Grade))
+	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +83,7 @@ func (r *DatabaseGroupRepository) FindAllGroups(filter GroupFilter) ([]entity.Gr
 	return groups, nil
 }
 
-func (r *DatabaseGroupRepository) UpdateGroup(group entity.Group) error {
+func (r *DbGroupRepository) UpdateGroup(group entity.Group) error {
 	query := `
 		UPDATE _group
 		SET course = $1, grade = $2
@@ -107,7 +105,7 @@ func (r *DatabaseGroupRepository) UpdateGroup(group entity.Group) error {
 	return nil
 }
 
-func (r *DatabaseGroupRepository) DeleteGroupByName(name string) error {
+func (r *DbGroupRepository) DeleteGroupByName(name string) error {
 	query := `
 		DELETE FROM _group
 		WHERE name = $1`

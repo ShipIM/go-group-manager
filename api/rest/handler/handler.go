@@ -7,11 +7,15 @@ import (
 )
 
 type Handler struct {
-	service *service.Service
+	service.GroupService
+	service.StudentService
 }
 
-func NewHandler(service *service.Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(groupService service.GroupService, studentService service.StudentService) *Handler {
+	return &Handler{
+		groupService,
+		studentService,
+	}
 }
 
 func (h *Handler) InitRoutes() http.Handler {

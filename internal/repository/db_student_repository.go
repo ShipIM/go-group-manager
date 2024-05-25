@@ -7,15 +7,15 @@ import (
 	"github.com/ShipIM/go-group-manager/internal/domain/entity"
 )
 
-type DatabaseStudentRepository struct {
+type DbStudentRepository struct {
 	db *sql.DB
 }
 
-func NewStudentRepository(db *sql.DB) *DatabaseStudentRepository {
-	return &DatabaseStudentRepository{db}
+func NewStudentRepository(db *sql.DB) *DbStudentRepository {
+	return &DbStudentRepository{db}
 }
 
-func (r *DatabaseStudentRepository) CreateStudent(student entity.Student) (entity.Student, error) {
+func (r *DbStudentRepository) CreateStudent(student entity.Student) (entity.Student, error) {
 	var created entity.Student
 
 	query := `
@@ -35,13 +35,13 @@ func (r *DatabaseStudentRepository) CreateStudent(student entity.Student) (entit
 	return created, nil
 }
 
-func (r *DatabaseStudentRepository) GetStudentById(id int) (entity.Student, error) {
+func (r *DbStudentRepository) GetStudentById(id int) (entity.Student, error) {
 	var student entity.Student
 
 	query := `
 		SELECT id, name, surname, patronymic, age, group_name
-	 	WHERE id = $1
-		FROM student`
+		FROM student
+	 	WHERE id = $1`
 
 	row := r.db.QueryRow(query, id)
 
@@ -58,20 +58,14 @@ func (r *DatabaseStudentRepository) GetStudentById(id int) (entity.Student, erro
 	return student, nil
 }
 
-func (r *DatabaseStudentRepository) FindAllStudents(filter StudentFilter) ([]entity.Student, error) {
+func (r *DbStudentRepository) FindAllStudents() ([]entity.Student, error) {
 	var students []entity.Student
 
 	query := `
 		SELECT id, name, surname, patronymic, age, group_name
-		FROM student
-		WHERE ($1 IS NULL OR name = $1)
-		AND ($2 IS NULL OR surname = $2)
-		AND ($3 IS NULL OR patronymic = $3)
-		AND ($4 IS NULL OR age = $4)
-		AND ($5 IS NULL OR group_name = $5)`
+		FROM student`
 
-	rows, err := r.db.Query(query, deref(filter.Name), deref(filter.Surname),
-		deref(filter.Patronymic), deref(filter.Age), deref(filter.GroupName))
+	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -93,14 +87,14 @@ func (r *DatabaseStudentRepository) FindAllStudents(filter StudentFilter) ([]ent
 	return students, nil
 }
 
-func (r *DatabaseStudentRepository) UpdateStudent(student entity.Student) error {
+func (r *DbStudentRepository) UpdateStudent(student entity.Student) error {
 	query := `
 		UPDATE student
 		SET name = $1, surname = $2, patronymic = $3, age = $4, group_name = $5
 		WHERE id = $6`
 
 	result, err := r.db.Exec(query, student.Name, student.Surname, student.Patronymic, student.Age,
-		student.GroupName)
+		student.GroupName, student.Id)
 	if err != nil {
 		return err
 	}
@@ -116,7 +110,7 @@ func (r *DatabaseStudentRepository) UpdateStudent(student entity.Student) error 
 	return nil
 }
 
-func (r *DatabaseStudentRepository) DeleteStudentById(id int) error {
+func (r *DbStudentRepository) DeleteStudentById(id int) error {
 	query := `
 		DELETE FROM student
 		WHERE id = $1`

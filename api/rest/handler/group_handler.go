@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -14,9 +12,9 @@ var groupPathPrefix = "/api/v1/groups/"
 
 func (h *Handler) handleGroups(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "POST":
+	case http.MethodPost:
 		h.createGroup(w, r)
-	case "GET":
+	case http.MethodGet:
 		h.getGroups(w, r)
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
@@ -28,34 +26,47 @@ func (h *Handler) createGroup(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&group)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to decode request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	created, err := h.service.CreateGroup(group)
-
+	created, err := h.CreateGroup(group)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to create group: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "%s", created.Name)
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(created)
+	if err != nil {
+		http.Error(w, "failed to encode group to JSON: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
-func (h *Handler) getGroups(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) getGroups(w http.ResponseWriter, _ *http.Request) {
+	groups, err := h.GetGroups()
+	if err != nil {
+		http.Error(w, "failed to get groups: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(groups)
+	if err != nil {
+		http.Error(w, "failed to encode groups to JSON: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *Handler) handleGroup(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		h.getGroup(w, r)
-	case "PUT":
+	case http.MethodPut:
 		h.updateGroup(w, r)
-	case "DELETE":
+	case http.MethodDelete:
 		h.deleteGroup(w, r)
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
@@ -65,17 +76,18 @@ func (h *Handler) handleGroup(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getGroup(w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimPrefix(r.URL.Path, groupPathPrefix)
 
-	group, err := h.service.GetGroupByName(name)
+	group, err := h.GetGroupByName(name)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to get group: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	reqBodyBytes := new(bytes.Buffer)
-	json.NewEncoder(reqBodyBytes).Encode(group)
-
-	fmt.Fprintf(w, "%s", reqBodyBytes.String())
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(group)
+	if err != nil {
+		http.Error(w, "failed to encode group to JSON: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *Handler) updateGroup(w http.ResponseWriter, r *http.Request) {
@@ -83,26 +95,32 @@ func (h *Handler) updateGroup(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&group)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to decode request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	group.Name = strings.TrimPrefix(r.URL.Path, groupPathPrefix)
 
-	err = h.service.UpdateGroup(group)
+	err = h.UpdateGroup(group)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "failed to update group: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(group)
+	if err != nil {
+		http.Error(w, "failed to encode group to JSON: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
 func (h *Handler) deleteGroup(w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimPrefix(r.URL.Path, groupPathPrefix)
 
-	err := h.service.DeleteGroupByName(name)
+	err := h.DeleteGroupByName(name)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to delete group: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 

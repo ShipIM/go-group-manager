@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,9 +13,9 @@ var studentsPathPrefix = "/api/v1/students/"
 
 func (h *Handler) handleStudents(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "POST":
+	case http.MethodPost:
 		h.createStudent(w, r)
-	case "GET":
+	case http.MethodGet:
 		h.getStudents(w, r)
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
@@ -29,34 +27,47 @@ func (h *Handler) createStudent(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&student)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to decode request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	created, err := h.service.CreateStudent(student)
-
+	created, err := h.CreateStudent(student)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to create student: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "%d", created.Id)
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(created)
+	if err != nil {
+		http.Error(w, "failed to encode student to JSON: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
-func (h *Handler) getStudents(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) getStudents(w http.ResponseWriter, _ *http.Request) {
+	students, err := h.GetStudents()
+	if err != nil {
+		http.Error(w, "failed to get students: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(students)
+	if err != nil {
+		http.Error(w, "failed to encode students to JSON: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *Handler) handleStudent(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		h.getStudent(w, r)
-	case "PUT":
+	case http.MethodPut:
 		h.updateStudent(w, r)
-	case "DELETE":
+	case http.MethodDelete:
 		h.deleteStudent(w, r)
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
@@ -67,22 +78,22 @@ func (h *Handler) getStudent(w http.ResponseWriter, r *http.Request) {
 	idString := strings.TrimPrefix(r.URL.Path, studentsPathPrefix)
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "invalid student ID: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	student, err := h.service.GetStudentById(id)
+	student, err := h.GetStudentById(id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to get student: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	reqBodyBytes := new(bytes.Buffer)
-	json.NewEncoder(reqBodyBytes).Encode(student)
-
-	fmt.Fprintf(w, "%s", reqBodyBytes.String())
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(student)
+	if err != nil {
+		http.Error(w, "failed to encode student to JSON: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *Handler) updateStudent(w http.ResponseWriter, r *http.Request) {
@@ -90,22 +101,28 @@ func (h *Handler) updateStudent(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&student)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to decode request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	idString := strings.TrimPrefix(r.URL.Path, studentsPathPrefix)
 	student.Id, err = strconv.Atoi(idString)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "invalid student ID: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = h.service.UpdateStudent(student)
+	err = h.UpdateStudent(student)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "failed to update student: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(student)
+	if err != nil {
+		http.Error(w, "failed to encode student to JSON: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -113,15 +130,13 @@ func (h *Handler) deleteStudent(w http.ResponseWriter, r *http.Request) {
 	idString := strings.TrimPrefix(r.URL.Path, studentsPathPrefix)
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "invalid student ID: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = h.service.DeleteStudentById(id)
+	err = h.DeleteStudentById(id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
+		http.Error(w, "failed to delete student: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
