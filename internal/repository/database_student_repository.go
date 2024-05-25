@@ -7,15 +7,15 @@ import (
 	"github.com/ShipIM/go-group-manager/internal/domain/entity"
 )
 
-type StudentRepository struct {
+type DatabaseStudentRepository struct {
 	db *sql.DB
 }
 
-func NewStudentRepository(db *sql.DB) *StudentRepository {
-	return &StudentRepository{db}
+func NewStudentRepository(db *sql.DB) *DatabaseStudentRepository {
+	return &DatabaseStudentRepository{db}
 }
 
-func (r *StudentRepository) CreateStudent(student entity.Student) (entity.Student, error) {
+func (r *DatabaseStudentRepository) CreateStudent(student entity.Student) (entity.Student, error) {
 	var created entity.Student
 
 	query := `
@@ -35,7 +35,7 @@ func (r *StudentRepository) CreateStudent(student entity.Student) (entity.Studen
 	return created, nil
 }
 
-func (r *StudentRepository) GetStudentById(id int) (entity.Student, error) {
+func (r *DatabaseStudentRepository) GetStudentById(id int) (entity.Student, error) {
 	var student entity.Student
 
 	query := `
@@ -58,7 +58,7 @@ func (r *StudentRepository) GetStudentById(id int) (entity.Student, error) {
 	return student, nil
 }
 
-func (r *StudentRepository) FindAllStudents(name, surname, patronymic, groupName string, age int) ([]entity.Student, error) {
+func (r *DatabaseStudentRepository) FindAllStudents(filter StudentFilter) ([]entity.Student, error) {
 	var students []entity.Student
 
 	query := `
@@ -70,7 +70,8 @@ func (r *StudentRepository) FindAllStudents(name, surname, patronymic, groupName
 		AND ($4 IS NULL OR age = $4)
 		AND ($5 IS NULL OR group_name = $5)`
 
-	rows, err := r.db.Query(query, name, surname, patronymic, age, groupName)
+	rows, err := r.db.Query(query, deref(filter.Name), deref(filter.Surname),
+		deref(filter.Patronymic), deref(filter.Age), deref(filter.GroupName))
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func (r *StudentRepository) FindAllStudents(name, surname, patronymic, groupName
 	return students, nil
 }
 
-func (r *StudentRepository) UpdateStudent(student entity.Student) error {
+func (r *DatabaseStudentRepository) UpdateStudent(student entity.Student) error {
 	query := `
 		UPDATE student
 		SET name = $1, surname = $2, patronymic = $3, age = $4, group_name = $5
@@ -115,7 +116,7 @@ func (r *StudentRepository) UpdateStudent(student entity.Student) error {
 	return nil
 }
 
-func (r *StudentRepository) DeleteStudentById(id int) error {
+func (r *DatabaseStudentRepository) DeleteStudentById(id int) error {
 	query := `
 		DELETE FROM student
 		WHERE id = $1`

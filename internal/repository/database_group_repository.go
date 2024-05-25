@@ -7,15 +7,15 @@ import (
 	"github.com/ShipIM/go-group-manager/internal/domain/entity"
 )
 
-type GroupRepository struct {
+type DatabaseGroupRepository struct {
 	db *sql.DB
 }
 
-func NewGroupRepository(db *sql.DB) *GroupRepository {
-	return &GroupRepository{db}
+func NewGroupRepository(db *sql.DB) *DatabaseGroupRepository {
+	return &DatabaseGroupRepository{db}
 }
 
-func (r *GroupRepository) CreateGroup(group entity.Group) (entity.Group, error) {
+func (r *DatabaseGroupRepository) CreateGroup(group entity.Group) (entity.Group, error) {
 	var created entity.Group
 
 	query := `
@@ -33,7 +33,7 @@ func (r *GroupRepository) CreateGroup(group entity.Group) (entity.Group, error) 
 	return created, nil
 }
 
-func (r *GroupRepository) GetGroupByName(name string) (entity.Group, error) {
+func (r *DatabaseGroupRepository) GetGroupByName(name string) (entity.Group, error) {
 	var group entity.Group
 
 	query := `
@@ -55,7 +55,7 @@ func (r *GroupRepository) GetGroupByName(name string) (entity.Group, error) {
 	return group, nil
 }
 
-func (r *GroupRepository) FindAllGroups(course *int, grade *string) ([]entity.Group, error) {
+func (r *DatabaseGroupRepository) FindAllGroups(filter GroupFilter) ([]entity.Group, error) {
 	var groups []entity.Group
 
 	query := `
@@ -64,7 +64,7 @@ func (r *GroupRepository) FindAllGroups(course *int, grade *string) ([]entity.Gr
 		WHERE ($1 IS NULL OR course = $1)
 		AND ($2 IS NULL OR grade = $2)`
 
-	rows, err := r.db.Query(query, course, grade)
+	rows, err := r.db.Query(query, deref(filter.Course), deref(filter.Grade))
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (r *GroupRepository) FindAllGroups(course *int, grade *string) ([]entity.Gr
 	return groups, nil
 }
 
-func (r *GroupRepository) UpdateGroup(group entity.Group) error {
+func (r *DatabaseGroupRepository) UpdateGroup(group entity.Group) error {
 	query := `
 		UPDATE _group
 		SET course = $1, grade = $2
@@ -107,7 +107,7 @@ func (r *GroupRepository) UpdateGroup(group entity.Group) error {
 	return nil
 }
 
-func (r *GroupRepository) DeleteGroupByName(name string) error {
+func (r *DatabaseGroupRepository) DeleteGroupByName(name string) error {
 	query := `
 		DELETE FROM _group
 		WHERE name = $1`
