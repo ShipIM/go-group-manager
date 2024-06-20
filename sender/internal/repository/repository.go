@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/ShipIM/go-group-manager/internal/domain/entity"
+	"github.com/ShipIM/go-group-manager/sender/internal/domain/entity"
 )
 
 type GroupRepository interface {

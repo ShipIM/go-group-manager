@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ShipIM/go-group-manager/internal/domain/entity"
+	"github.com/ShipIM/go-group-manager/sender/internal/domain/entity"
 )
 
 var groupPathPrefix = "/api/v1/groups/"

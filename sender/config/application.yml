@@ -9,3 +9,7 @@ db:
   dbname:        "group-manager"
   sslmode:       "disable"
   migration_dir: "migration"
+
+rabbit:
+  address:
+  out_queue:

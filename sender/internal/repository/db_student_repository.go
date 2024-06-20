@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/ShipIM/go-group-manager/internal/domain/entity"
+	"github.com/ShipIM/go-group-manager/sender/internal/domain/entity"
 )
 
 type DbStudentRepository struct {
