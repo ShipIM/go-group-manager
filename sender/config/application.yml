@@ -12,4 +12,4 @@ db:
 
 rabbit:
   address:
-  out_queue:
+  exchanger: exchanger
