@@ -1,14 +1,16 @@
+//go:build receiver
+
 package main
 
 import (
 	"log"
 
-	"github.com/ShipIM/go-group-manager/rabbit_receiver/internal/rabbit"
+	"github.com/ShipIM/go-group-manager/internal/rabbit"
 	"github.com/spf13/viper"
 )
 
 func main() {
-	if err := initConfig(); err != nil {
+	if err := initReceiverConfig(); err != nil {
 		log.Fatalf("can not initialize configs: %s", err.Error())
 	}
 
@@ -18,7 +20,7 @@ func main() {
 		rabbitInQueue   = viper.GetString("rabbit.in_queue")
 	)
 
-	connMq, err := rabbit.InitRabbit(rabbitAddress, rabbitExchanger, rabbitInQueue)
+	connMq, err := rabbit.InitReceiverRabbit(rabbitAddress, rabbitExchanger, rabbitInQueue)
 	if err != nil {
 		log.Fatalf("Failed to initialize RabbitMQ: %s", err)
 	}
@@ -55,9 +57,9 @@ func main() {
 	<-forever
 }
 
-func initConfig() error {
+func initReceiverConfig() error {
 	viper.AddConfigPath("config")
-	viper.SetConfigName("application")
+	viper.SetConfigName("application-receiver")
 
 	return viper.ReadInConfig()
 }

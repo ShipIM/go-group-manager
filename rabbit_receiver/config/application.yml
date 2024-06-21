@@ -1,4 +1,0 @@
-rabbit:
-  address:
-  exchanger: exchanger
-  in_queue: students

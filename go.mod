@@ -1,4 +1,4 @@
-module github.com/ShipIM/go-group-manager/sender
+module github.com/ShipIM/go-group-manager
 
 go 1.22.3
 

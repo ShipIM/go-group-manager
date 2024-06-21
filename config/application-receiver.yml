@@ -1,0 +1,4 @@
+rabbit:
+  address:    amqp://guest:guest@rabbit-rabbitmq:5672/
+  exchanger:  exchanger
+  in_queue:   students

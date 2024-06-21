@@ -6,7 +6,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func InitRabbit(uri string, exchange string, in string) (*amqp.Connection, error) {
+func InitSenderRabbit(uri string, exchange string) (*amqp.Connection, error) {
 	conn, err := amqp.Dial(uri)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initiate connection: %w", err)
@@ -30,31 +30,6 @@ func InitRabbit(uri string, exchange string, in string) (*amqp.Connection, error
 	if err != nil {
 		conn.Close()
 		return nil, fmt.Errorf("failed to declare exchange: %w", err)
-	}
-
-	q, err := ch.QueueDeclare(
-		in,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		conn.Close()
-		return nil, fmt.Errorf("failed to declare queue: %w", err)
-	}
-
-	err = ch.QueueBind(
-		q.Name,
-		"",
-		exchange,
-		false,
-		nil,
-	)
-	if err != nil {
-		conn.Close()
-		return nil, fmt.Errorf("failed to declare bind: %w", err)
 	}
 
 	return conn, nil

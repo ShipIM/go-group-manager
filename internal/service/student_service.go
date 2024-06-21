@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ShipIM/go-group-manager/sender/internal/domain/entity"
-	"github.com/ShipIM/go-group-manager/sender/internal/repository"
+	"github.com/ShipIM/go-group-manager/internal/domain/entity"
+	"github.com/ShipIM/go-group-manager/internal/repository"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 

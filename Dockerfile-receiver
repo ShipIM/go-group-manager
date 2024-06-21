@@ -1,5 +1,5 @@
 FROM golang:alpine
 WORKDIR /build
 COPY . .
-RUN go build -o /rabbit-receiver cmd/main.go
+RUN go build -tags receiver -o /rabbit-receiver cmd/receiver.go
 CMD ["/rabbit-receiver"]

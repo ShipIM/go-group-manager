@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/ShipIM/go-group-manager/sender/internal/service"
+	"github.com/ShipIM/go-group-manager/internal/service"
 )
 
 type Handler struct {

@@ -1,3 +1,5 @@
+//go:build sender
+
 package main
 
 import (
@@ -6,12 +8,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ShipIM/go-group-manager/sender/api/rest/handler"
-	"github.com/ShipIM/go-group-manager/sender/internal/postgres"
-	"github.com/ShipIM/go-group-manager/sender/internal/rabbit"
-	"github.com/ShipIM/go-group-manager/sender/internal/repository"
-	"github.com/ShipIM/go-group-manager/sender/internal/service"
-	"github.com/ShipIM/go-group-manager/sender/pkg"
+	"github.com/ShipIM/go-group-manager/api/rest/handler"
+	"github.com/ShipIM/go-group-manager/internal/postgres"
+	"github.com/ShipIM/go-group-manager/internal/rabbit"
+	"github.com/ShipIM/go-group-manager/internal/repository"
+	"github.com/ShipIM/go-group-manager/internal/service"
+	"github.com/ShipIM/go-group-manager/pkg"
 
 	"github.com/spf13/viper"
 )
@@ -20,7 +22,7 @@ import (
 var MigrationsFS embed.FS
 
 func main() {
-	if err := initConfig(); err != nil {
+	if err := initSenderConfig(); err != nil {
 		log.Fatalf("can not initialize configs: %s", err.Error())
 	}
 
@@ -52,7 +54,7 @@ func main() {
 		panic(err)
 	}
 
-	conn_mq, err := rabbit.InitRabbit(rabbitAddress, rabbitExchanger)
+	conn_mq, err := rabbit.InitSenderRabbit(rabbitAddress, rabbitExchanger)
 	if err != nil {
 		panic(err)
 	}
@@ -76,9 +78,9 @@ func main() {
 	}
 }
 
-func initConfig() error {
+func initSenderConfig() error {
 	viper.AddConfigPath("config")
-	viper.SetConfigName("application")
+	viper.SetConfigName("application-sender")
 
 	return viper.ReadInConfig()
 }

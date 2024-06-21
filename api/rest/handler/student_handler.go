@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ShipIM/go-group-manager/sender/internal/domain/entity"
+	"github.com/ShipIM/go-group-manager/internal/domain/entity"
 )
 
 var studentsPathPrefix = "/api/v1/students/"

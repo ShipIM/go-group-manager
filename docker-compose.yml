@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  sender:
+    image: 'shipim/rabbit-sender:1.0.0'
+    container_name: 'sender'
+    build:
+      context: .
+      dockerfile: Dockerfile-sender
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - 'rabbit-postgres'
+      - 'rabbit-rabbitmq'
+  rabbit-receiver:
+    image: 'shipim/rabbit-receiver:1.0.0'
+    container_name: 'rabbit-receiver'
+    build:
+      context: .
+      dockerfile: Dockerfile-receiver
+    restart: always
+    depends_on:
+      - 'rabbit-rabbitmq'
+  rabbit-postgres:
+    image: 'postgres:latest'
+    container_name: 'rabbit-postgres'
+    ports:
+      - "5432:5432"
+    environment:
+      - 'POSTGRES_USER=postgres'
+      - 'POSTGRES_PASSWORD=postgres'
+      - 'POSTGRES_HOST_AUTH_METHOD=trust'
+      - 'POSTGRES_DB=group-manager'
+  rabbit-rabbitmq:
+    image: rabbitmq:latest
+    container_name: 'rabbit-rabbitmq'
+    ports:
+      - 5672:5672

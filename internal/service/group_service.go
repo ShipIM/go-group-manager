@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/ShipIM/go-group-manager/sender/internal/domain/entity"
-	"github.com/ShipIM/go-group-manager/sender/internal/repository"
+	"github.com/ShipIM/go-group-manager/internal/domain/entity"
+	"github.com/ShipIM/go-group-manager/internal/repository"
 )
 
 type GroupService struct {

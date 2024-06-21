@@ -2,14 +2,14 @@ server:
   port:          "8080"
 
 db:
-  host:          "localhost"
+  host:          "rabbit-postgres"
   port:          "5432"
   username:      "postgres"
   password:      "postgres"
-  dbname:        "group-manager"
+  name:          "group-manager"
   sslmode:       "disable"
   migration_dir: "migration"
 
 rabbit:
-  address:
+  address: amqp://guest:guest@rabbit-rabbitmq:5672/
   exchanger: exchanger
